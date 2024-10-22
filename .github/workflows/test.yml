@@ -55,7 +55,8 @@ jobs:
           github_token:    ${{ secrets.github_token }}
           reporter:        github-pr-review
           level:           error
-          reviewdog_flags: -filter-mode=file -fail-on-error
+          fail_level:      any
+          reviewdog_flags: -filter-mode=file -tee
       - name: check the exit code
         if: ${{ !success() }}
         run: echo 'The previous step should fail' && exit 1

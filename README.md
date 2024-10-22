@@ -1,10 +1,10 @@
 # GitHub Action: Run bundler-audit with reviewdog :dog:
 
-[![Test](https://github.com/tomferreira/action-bundler-audit/workflows/Test/badge.svg)](https://github.com/tomferreira/action-bundler-audit/actions?query=workflow%3ATest)
-[![reviewdog](https://github.com/tomferreira/action-bundler-audit/workflows/reviewdog/badge.svg)](https://github.com/tomferreira/action-bundler-audit/actions?query=workflow%3Areviewdog)
-[![depup](https://github.com/tomferreira/action-bundler-audit/workflows/depup/badge.svg)](https://github.com/tomferreira/action-bundler-audit/actions?query=workflow%3Adepup)
-[![release](https://github.com/tomferreira/action-bundler-audit/workflows/release/badge.svg)](https://github.com/tomferreira/action-bundler-audit/actions?query=workflow%3Arelease)
-[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/tomferreira/action-bundler-audit?logo=github&sort=semver)](https://github.com/tomferreira/action-bundler-audit/releases)
+[![Test](https://github.com/kado-ta/bundler-audit-reviewdog/workflows/Test/badge.svg)](https://github.com/kado-ta/bundler-audit-reviewdog/actions?query=workflow%3ATest)
+[![reviewdog](https://github.com/kado-ta/bundler-audit-reviewdog/workflows/reviewdog/badge.svg)](https://github.com/kado-ta/bundler-audit-reviewdog/actions?query=workflow%3Areviewdog)
+[![depup](https://github.com/kado-ta/bundler-audit-reviewdog/workflows/depup/badge.svg)](https://github.com/kado-ta/bundler-audit-reviewdog/actions?query=workflow%3Adepup)
+[![release](https://github.com/kado-ta/bundler-audit-reviewdog/workflows/release/badge.svg)](https://github.com/kado-ta/bundler-audit-reviewdog/actions?query=workflow%3Arelease)
+[![GitHub release (latest SemVer)](https://img.shields.io/github/v/release/kado-ta/bundler-audit-reviewdog?logo=github&sort=semver)](https://github.com/kado-ta/bundler-audit-reviewdog/releases)
 [![action-bumpr supported](https://img.shields.io/badge/bumpr-supported-ff69b4?logo=github&link=https://github.com/haya14busa/action-bumpr)](https://github.com/haya14busa/action-bumpr)
 
 ![Example comment made by the action, with github-pr-review](/.github/images/example-github-pr-review.png)
@@ -18,6 +18,8 @@ code review experience.
 ### `github_token`
 
 `GITHUB_TOKEN`. Default is `${{ github.token }}`.
+
+For more details about `github.token` context, [click here](https://docs.github.com/ja/actions/writing-workflows/choosing-what-your-workflow-does/accessing-contextual-information-about-workflow-runs#github-context).
 
 ### `bundler_audit_version`
 
@@ -50,10 +52,11 @@ The default is `github-pr-check`.
 Optional. Filtering mode for the reviewdog command [`added`, `diff_context`, `file`, `nofilter`].
 Default is `added`.
 
-### `fail_on_error`
+### `fail_level`
 
-Optional.  Exit code for reviewdog when errors are found [`true`, `false`].
-Default is `false`.
+Optional. reviewdog will exit with code 1 with -fail-level=[`any`, `info`, `warning`, `error`] flag 
+if it finds at least 1 issue with severity greater than or equal to the given level.
+Default is `none`.
 
 ### `reviewdog_flags`
 
@@ -66,22 +69,31 @@ Optional. The directory from which to look for and run bundler-audit. Default `.
 ## Example usage
 
 ```yaml
-name: reviewdog
+name: bundler-audit-reviewdog
+
 on: [pull_request]
+
 jobs:
-  bundler_audit:
+  bundler-audit:
     name: runner / bundler_audit
     runs-on: ubuntu-latest
     steps:
       - name: Check out code
-        uses: actions/checkout@v2
-      - uses: ruby/setup-ruby@v1
+        uses: actions/checkout@v4
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
         with:
-          ruby-version: 3.0.0
-      - name: bundler_audit
-        uses: tomferreira/action-bundler-audit@v1
+          bundler-cache: true
+          # ruby-version: を指定しない場合、 Ruby のバージョンは .ruby-version から読み取られる。
+          # ruby-version: 3.3.5 として指定することも可能。
+
+      - name: Exec bundler-audit
+        uses: kado-ta/bundler-audit-reviewdog@v1
         with:
           bundler_audit_version: gemfile
-          # Change reviewdog reporter if you need [github-check,github-pr-review,github-pr-check].
+          level: warning
+          # Change reviewdog reporter
+          # if you need [github-check, github-pr-review, github-pr-check].
           reporter: github-pr-review
 ```

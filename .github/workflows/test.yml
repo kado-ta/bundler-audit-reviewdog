@@ -1,49 +1,60 @@
 name: Test
+
 on:
   push:
     branches:
       - main
   pull_request:
+
 jobs:
   test-check:
     name: runner / <linter-name> (github-check)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
       - uses: ./
         with:
+          workdir:      ./test/github_check
           github_token: ${{ secrets.github_token }}
-          reporter: github-check
-          level: info
-          locale: "US"
+          bundler_audit_flags: --update --gemfile-lock Gemfile.lock
+          reporter:     github-check
+          level:        info
 
   test-pr-check:
     if: github.event_name == 'pull_request'
     name: runner / <linter-name> (github-pr-check)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
       - uses: ./
         with:
+          workdir:      ./test/github_pr_check
           github_token: ${{ secrets.github_token }}
-          reporter: github-pr-check
-          level: warning
-          locale: "US"
-          workdir: ./testdata/subdir/
+          reporter:     github-pr-check
+          level:        warning
 
   test-pr-review:
     if: github.event_name == 'pull_request'
     name: runner / <linter-name> (github-pr-review)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Ruby
+        uses: ruby/setup-ruby@v1
       - uses: ./
         continue-on-error: true
         with:
-          github_token: ${{ secrets.github_token }}
-          reporter: github-pr-review
-          level: error
-          locale: "US"
+          workdir:        ./test/github_pr_review
+          github_token:    ${{ secrets.github_token }}
+          reporter:        github-pr-review
+          level:           error
           reviewdog_flags: -filter-mode=file -fail-on-error
       - name: check the exit code
         if: ${{ !success() }}

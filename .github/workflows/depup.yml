@@ -10,10 +10,12 @@ jobs:
   reviewdog:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: reviewdog/action-depup/with-pr@v1
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Update reviewdog version
+        uses: reviewdog/action-depup/with-pr@v1
         with:
-          file: action.yml
+          file:         action.yml
           version_name: reviewdog_version
-          repo: reviewdog/reviewdog
-          labels: "bump:minor"
+          repo:         reviewdog/reviewdog
+          labels:       "bump:minor"

@@ -1,0 +1,8 @@
+source 'https://rubygems.org'
+git_source(:github) { |repo| "https://github.com/#{repo}.git" }
+
+# 下記コマンドで Gemfile.lock の RUBY VERSION を更新する。
+# `docker compose run --rm app_setup bash -c 'bundle update --ruby'`
+ruby file: '../../.ruby-version'
+
+gem 'puma', '6.1.0'

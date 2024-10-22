@@ -1,2 +1,5 @@
+# Ignore vendor dir for test
+/**/vendor
+
 # Folders to ignore
 .vscode/

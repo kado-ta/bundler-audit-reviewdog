@@ -5,7 +5,8 @@ if [ -n "${GITHUB_WORKSPACE}" ]; then
   cd "${GITHUB_WORKSPACE}/${INPUT_WORKDIR}" || exit
 fi
 
-export REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
+REVIEWDOG_GITHUB_API_TOKEN="${INPUT_GITHUB_TOKEN}"
+export REVIEWDOG_GITHUB_API_TOKEN
 
 echo '::group:: Installing bundler-audit with extensions ... https://github.com/rubysec/bundler-audit'
 # if 'gemfile' bundler-audit version selected
@@ -36,13 +37,19 @@ echo '::endgroup::'
 echo '::group:: Running bundler-audit with reviewdog 🐶 ...'
 bundler-audit update
 
-bundler-audit check ${INPUT_BUNDLER_AUDIT_FLAGS} --format json \
-  | ruby ${GITHUB_ACTION_PATH}/rdjson_formatter.rb \
-  | reviewdog -f=rdjson \
+# NOTE: ${INPUT_BUNDLER_AUDIT_FLAGS} の書き方では SC2086 違反を指摘されるが、
+# 複数のオプションを文法違反なしに適切に展開する方法が見つからないので SC2086 は無視する。
+# shellcheck disable=SC2086
+set -- $INPUT_BUNDLER_AUDIT_FLAGS
+# shellcheck disable=SC2086
+bundler-audit check "$@" --format json |
+  tail -n 1 |
+  ruby "${GITHUB_ACTION_PATH}"/rdjson_formatter.rb |
+  reviewdog -f=rdjson \
     -name="${INPUT_TOOL_NAME}" \
     -reporter="${INPUT_REPORTER}" \
     -filter-mode="${INPUT_FILTER_MODE}" \
-    -fail-on-error="${INPUT_FAIL_ON_ERROR}" \
+    -fail-level="${INPUT_FAIL_LEVEL}" \
     -level="${INPUT_LEVEL}" \
     ${INPUT_REVIEWDOG_FLAGS}
 
